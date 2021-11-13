@@ -1,0 +1,108 @@
+"0","# Installation of required packages, only run if not installed yet"
+"0",""
+"0","# RTN for inferring the regulatory network based on the downloaded gene expression data"
+"0","# snow for parallel processing in RTN"
+"0","# RedeR for better visualization of inferred network"
+"0",""
+"0","if (!requireNamespace(""BiocManager"", quietly = TRUE))"
+"0","    install.packages(""BiocManager"")"
+"0",""
+"0","# For main code"
+"0","BiocManager::install(""RTN"")"
+"2","'getOption(""repos"")' replaces Bioconductor standard repositories, see '?repositories'
+for details
+
+replacement repositories:
+    CRAN: https://cran.rstudio.com/
+
+"
+"2","Bioconductor version 3.13 (BiocManager 1.30.16), R 4.1.1 (2021-08-10)
+"
+"2","Warning:"
+"2"," package(s) not installed when version(s) same as current; use `force = TRUE` to
+  re-install: 'RTN'
+"
+"2","Old packages: 'conquer', 'glue', 'igraph', 'nloptr', 'RcppArmadillo', 'readr',
+  'tibble', 'uuid', 'vroom', 'xfun'
+"
+"1","Update all/some/none? [a/s/n]: "
+"0","n"
+"0","BiocManager::install(""snow"")"
+"2","'getOption(""repos"")' replaces Bioconductor standard repositories, see '?repositories'
+for details
+
+replacement repositories:
+    CRAN: https://cran.rstudio.com/
+
+"
+"2","Bioconductor version 3.13 (BiocManager 1.30.16), R 4.1.1 (2021-08-10)
+"
+"2","Warning:"
+"2"," package(s) not installed when version(s) same as current; use `force = TRUE` to
+  re-install: 'snow'
+"
+"2","Old packages: 'conquer', 'glue', 'igraph', 'nloptr', 'RcppArmadillo', 'readr',
+  'tibble', 'uuid', 'vroom', 'xfun'
+"
+"1","Update all/some/none? [a/s/n]: "
+"0","n"
+"0","BiocManager::install(""RedeR"")"
+"2","'getOption(""repos"")' replaces Bioconductor standard repositories, see '?repositories'
+for details
+
+replacement repositories:
+    CRAN: https://cran.rstudio.com/
+
+"
+"2","Bioconductor version 3.13 (BiocManager 1.30.16), R 4.1.1 (2021-08-10)
+"
+"2","Warning:"
+"2"," package(s) not installed when version(s) same as current; use `force = TRUE` to
+  re-install: 'RedeR'
+"
+"2","Old packages: 'conquer', 'glue', 'igraph', 'nloptr', 'RcppArmadillo', 'readr',
+  'tibble', 'uuid', 'vroom', 'xfun'
+"
+"1","Update all/some/none? [a/s/n]: "
+"0","n"
+"0",""
+"0","# For preprocessing"
+"0","BiocManager::install(""Biobase"")"
+"2","'getOption(""repos"")' replaces Bioconductor standard repositories, see '?repositories'
+for details
+
+replacement repositories:
+    CRAN: https://cran.rstudio.com/
+
+"
+"2","Bioconductor version 3.13 (BiocManager 1.30.16), R 4.1.1 (2021-08-10)
+"
+"2","Warning:"
+"2"," package(s) not installed when version(s) same as current; use `force = TRUE` to
+  re-install: 'Biobase'
+"
+"2","Old packages: 'conquer', 'glue', 'igraph', 'nloptr', 'RcppArmadillo', 'readr',
+  'tibble', 'uuid', 'vroom', 'xfun'
+"
+"1","Update all/some/none? [a/s/n]: "
+"0","n"
+"0","BiocManager::install(""GEOquery"")"
+"2","'getOption(""repos"")' replaces Bioconductor standard repositories, see '?repositories'
+for details
+
+replacement repositories:
+    CRAN: https://cran.rstudio.com/
+
+"
+"2","Bioconductor version 3.13 (BiocManager 1.30.16), R 4.1.1 (2021-08-10)
+"
+"2","Warning:"
+"2"," package(s) not installed when version(s) same as current; use `force = TRUE` to
+  re-install: 'GEOquery'
+"
+"2","Old packages: 'conquer', 'glue', 'igraph', 'nloptr', 'RcppArmadillo', 'readr',
+  'tibble', 'uuid', 'vroom', 'xfun'
+"
+"1","Update all/some/none? [a/s/n]: "
+"1","Update all/some/none? [a/s/n]: "
+"0","n"

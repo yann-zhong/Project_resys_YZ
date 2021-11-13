@@ -1,0 +1,453 @@
+---
+jupyter:
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+  language_info:
+    codemirror_mode: r
+    file_extension: .r
+    mimetype: text/x-r-source
+    name: R
+    pygments_lexer: r
+    version: 3.6.1
+  nbrmd_format_version: '1.0'
+---
+
+# Setting up R
+
+We will use the R language for our sessions.
+You can do most of the practicals in the same amount of work in python (or matlab, mathematica...), but later on we will use statistical packages that are only implemented in R.
+For each session I will give you the solution in R, and you are free to use the language of your choice for the projects.
+
+
+If you want to use R you can download it from here : https://cran.r-project.org/bin/ .
+
+I also advise to use Rstudio, a user-friendly environment and editor : https://www.rstudio.com/products/rstudio/download/ .
+
+If you are not familiar with R, you can learn the basics here http://www.sthda.com/english/wiki/r-basics-quick-and-easy .
+
+Once R is installed you will need to install an additional package that we will use for this session. Copy and paste this line in your R command prompt to run it :
+```{r echo=TRUE, eval=FALSE}
+install.packages("igraph", dependencies = TRUE)
+```
+
+You can find its documentation here : https://igraph.org/r/doc/ (I suggest you keep it open in a tab!)
+
+
+# Topoligical measures with igraph 
+
+```{r, message=FALSE}
+library(igraph) # Loading external library igraph
+```
+
+```{r}
+g = read_graph("simple_graph.txt") # g is an igraph object
+g = as.undirected(g)
+plot(g) # In R, the plot() function is different depending on what is being plotted
+```
+
+```{r}
+V(g) # V() (for Vertices) is a function ot call on a graph g
+```
+
+```{r}
+E(g) #E for Edges
+```
+
+1. Find two different ways to write down this network’s topology
+
+```{r}
+# Adjacency matrix :
+as_adj(g)
+
+# Adjacency list :
+as_adj_list(g)
+```
+
+2. What are the degrees of the nodes 1, 2, 5 ? Specify in,
+out and total degree if applicable.
+
+```{r}
+degree(g)[c(1,2,5)] # We can access the list returned by degree(g) with a list of indexes in []
+table(degree(g)) # The table() function counts the occurences of each value
+hist(degree(g)) # hist() plots a histogram of a list
+```
+
+3. How many connected components are there ? How many
+cliques of more thant 3 nodes ?
+
+```{r}
+components(g) # The result of components() is a named list
+cliques(g, min=3) # The result of cliques() is an unnamed list
+```
+
+4. What is the betweenness centrality of the node 5 ? Which has a higher centrality : 3 or 4 ? Which nodes have non-zero betweenness ?
+
+```{r}
+betweenness(g) # The result of betweenness() is a 1-dimensional array
+```
+
+5. What are the clustering coefficients of the nodes 2, 4, 5 ?
+
+```{r}
+transitivity(g, type = "local")[c(2,4,5)]
+```
+
+## Guess the network
+
+In this section you will find the code used to generate the three networks, the different plots and the asnwers to the final two questions.
+
+```{r}
+N_nodes = 100
+N_edges = 300
+g1 = erdos.renyi.game(n = N_nodes, p.or.m = N_edges/(N_nodes*(N_nodes-1)/2))
+g2 = barabasi.game(n = N_nodes, m=N_edges/N_nodes, power = 1, directed=F)
+g3 = watts.strogatz.game(1, N_nodes, N_edges/N_nodes, 0.1)
+```
+
+```{r}
+dd_g1 = degree_distribution(g1)
+dd_g2 = degree_distribution(g2)
+dd_g3 = degree_distribution(g3)
+```
+
+```{r}
+dd_g1[dd_g1==0] = NA
+dd_g2[dd_g2==0] = NA
+dd_g3[dd_g3==0] = NA
+```
+
+```{r}
+#pdf("dd_hist.pdf", width=2.5, height=7)
+par(mfrow=c(3,1), mar=c(4,4.1,1,1))
+plot(1:length(dd_g1), dd_g1, type='h', xlab = 'Degree', ylab = 'Density')
+plot(1:length(dd_g2), dd_g2, type='h', xlab = 'Degree', ylab = 'Density')
+plot(1:length(dd_g3), dd_g3, type='h', xlab = 'Degree', ylab = 'Density')
+#dev.off()
+```
+
+```{r}
+#pdf("dd_log.pdf", width=2.5, height=7)
+par(mfrow=c(3,1), mar=c(4,4.1,1,1))
+plot(1:length(dd_g1), dd_g1, type='p', log="xy", xlab = 'Degree', ylab = 'Density')
+plot(1:length(dd_g2), dd_g2, type='p', log="xy", xlab = 'Degree', ylab = 'Density')
+plot(1:length(dd_g3), dd_g3, type='p', log="xy", xlab = 'Degree', ylab = 'Density')
+#dev.off()
+```
+
+```{r}
+average.path.length(g1)
+average.path.length(g2)
+average.path.length(g3)
+```
+
+```{r}
+transitivity(g1)
+transitivity(g2)
+transitivity(g3)
+```
+
+```{r}
+# This function was used to plot the graphs examples. Do not try to plot big graphs ! (more than a few hundred nodes)
+plot_graph = function(g){
+    V(g)$size = (degree(g)+1)*0.7
+    V(g)$frame.color <- "white"
+    plot(g, vertex.label=NA, edge.width=0.5)
+}
+```
+
+```{r}
+#pdf("example_g1.pdf", width=3, height=3)
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(0,0,0,0))
+plot_graph(g1)
+#dev.off()
+
+#pdf("example_g2.pdf", width=3, height=3)
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(0,0,0,0))
+plot_graph(g2)
+#dev.off()
+
+#pdf("example_g3.pdf", width=3, height=3)
+#par(mgp=c(2.2,0.45,0), tcl=-0.4, mar=c(0,0,0,0))
+plot_graph(g3)
+#dev.off()
+```
+
+# Network inference using ARACNE
+
+ARACNE is an Algorithm for the Reconstruction of Accurate Cellular Networks, one of the most cited and widely known network inference method in bioinformatics.
+It is intuitive and easy to apply to many datasets, but as we will see it also suffers from its simplicity.
+
+ARACNE relies on the previously mentionend Data Processing Inequality, an information theoretic concept according to which the information of an original signal can only be lost and never gained when said signal passes through noisy channels.
+
+![The Data Processing Inequality illustrated](./Figures/ARACNE.png){width=600px}
+
+The algorithm is fairly simple : 
+
+1. First, compute the mutual information for every pair of variable in the dataset.
+2. For every triplet $g_1, g_2, g_3$ which have shown three significant pairwise information, remove the link with the least information.
+
+It was proven that ARACNE reconstructs the correct underlying network exactly if the mutual information can be estimated without error, and if the underlying network is a tree.
+The second assumption is problematic for many applications, although ARACNE may reconstruct graphs which contains cycles there are no guarantees that the approach will perform correctly.
+
+```{r}
+mi_matrix = read.table("MI_matrix.txt")
+mi_matrix # is a data.frame
+plot(graph_from_adjacency_matrix(as.matrix(mi_matrix), mode="undirected", weighted = TRUE))
+```
+
+```{r}
+my_aracne = function(mi_matrix){
+  result = mi_matrix
+  
+  for(i in 1:nrow(mi_matrix)){
+    
+    for(j in 1:nrow(mi_matrix)){
+      
+      if(mi_matrix[i,j] == 0) next
+      for(k in 1:nrow(mi_matrix)){
+        
+        if(mi_matrix[i,k] == 0 || mi_matrix[j,k] == 0) next
+        
+        weakest_edge = which.min(c(mi_matrix[i,j],
+                                   mi_matrix[i,k],
+                                   mi_matrix[j,k]))
+        if(weakest_edge == 1) {
+          result[i,j] = 0
+          result[j,i] = 0
+        } else if(weakest_edge == 2){
+          result[i,k] = 0
+          result[k,i] = 0
+        } else{
+          result[j,k] = 0
+          result[k,j] = 0
+        }
+      }
+    }
+  }
+  
+  return(result)
+}
+```
+
+```{r}
+net = my_aracne(mi_matrix)
+net
+```
+
+```{r}
+plot(graph_from_adjacency_matrix(as.matrix(net), mode="undirected", weighted = TRUE))
+```
+
+ARACNE cannot infer direction nor causality, it merely concludes on the presence or not of a significant correlation.
+
+# Protein-Protein network
+
+As you have seen in class, Different types of information can be represented in the shape of networks in order to model the cell. The meaning of the nodes and edges used in a network representation depends on the type of data used to build the network and this should be taken into account when analysing it.
+
+![A network with different types of interactions](./Figures/Networks_cellnetworks.png)
+
+In practice it is much easier to start with a single interaction type, as you have to make sure that the data are compatible and that you do not introduce bias in your network.
+The goal of this first practical session is to introduce you to the programmatic approach to building and analyzing networks. We will model the [interactome](https://en.wikipedia.org/wiki/Interactome) starting from a list of all the protein-protein interactions documented for a given organism, analyse its global properties and propose some finer analysis through specific examples. 
+
+
+![A typical network analysis workflow](./Figures/Networks_workflow.png)
+
+
+# Guided analysis of a protein-protein interaction network
+
+Start by downloading the protein-protein interaction data of the organism of your choice (preferably Homo sapiens or Saccharomyces cerevisiae) from STRING[^1] https://string-db.org/cgi/download.pl (do not download the complete database !). STRING-db is a database of known and predicted interactions based on different types of evidence. In this exercise we will compare two networks : one with only the links with strong experimental evidence and one with the links with high confidence according to their "combined score", which is constructed partly from indirect evidence such as co-occurence in published abstracts, co-expression etc...
+
+Download the 'detailed' file for your chosen organism, which lists all interactions with their subscores (confidence value between 0 and 1000).
+
+You can use bash commands in a terminal to filter the files first instead of importing the whole dataset in R (which uses more RAM).
+```{bash echo=TRUE, eval=FALSE}
+# OS X users can use "gawk" instead of "awk"
+# Filtering edges on combined score > 900
+awk '{if($10>900) print}' 9606.protein.links.detailed.v11.0.txt > human_combined_900.txt
+# Filtering edges on experimental score > 900
+awk '{if($7>900) print}' 9606.protein.links.detailed.v11.0.txt > human_experimental_900.txt
+```
+
+Now you can load those files into R.
+
+## Loading the data and constructing the graph
+
+With the filtered list of edges, construct a graph object that is undirected, unweighted and making sure that there are no duplicated edges.
+See https://igraph.org/r/doc/aaa-igraph-package.html and https://igraph.org/r/doc/ for help.
+
+```{r loading}
+library(igraph)
+
+interactions_combined = read.table("human_combined_900.txt", header=T)
+interactions_experimental = read.table("human_experimental_900.txt", header=T)
+# ... Construct graphs objects :
+# See the "graph_from_" functions in the igraph documentation. Do we want a directed graph ? duplicated edges ?
+# Save the results in two variables named g_combined and g_experimental. You can access their list of edges with E(g_expermiental)
+#and their vertices with V(g_experimental).
+```
+
+
+```{r include=TRUE}
+g_combined = graph_from_data_frame(interactions_combined, directed = F)
+g_combined = simplify(g_combined, remove.multiple = T)
+
+g_experimental = graph_from_data_frame(interactions_experimental, directed = F)
+g_experimental = simplify(g_experimental, remove.multiple = T)
+
+# We don't need to keep the original data tables in memory
+rm(interactions_combined, interactions_experimental)
+```
+
+
+## Early analysis
+
+Now that we have created the graph objects we can begin the analysis. First print the number of vertices(nodes) and edges for each graph have.
+
+```{r}
+print(paste('Combined score :',
+            length(V(g_combined)), 'nodes and',
+            length(E(g_combined)), 'edges'))
+
+print(paste('Experimental only :',
+            length(V(g_experimental)), 'nodes and',
+            length(E(g_experimental)), 'edges'))
+```
+
+
+### Network characteristics 
+
+What do the networks look like ? (igraph is not made to plot more than a few hundred nodes, do not try to call `plot` !) Use the theoretical properties seen in the first part to try to define the graph : degree distribution, mean degree (1st neighbours), clustering coefficient... 
+
+* Compare the mean and median degrees and clustering coefficient (transitivity) of the two graphs
+* Plot the distribution of the degrees of each graph, with a normal histogram and in log-log scale
+* Plot the degree of each node in the experimental graph against its degree in the combined score network. Do the same for betweenness and transitivity.
+
+Note that since we created a graph from a list of interactions every node has a degree of at least 1.
+```{r}
+combined.degrees = degree(g_combined)
+mean(combined.degrees)
+
+experimental.degrees = degree(g_experimental)
+mean(experimental.degrees)
+
+# ... Plot the degree distribution in log-log scale and the degree
+#of each node in experimental vs combined
+#
+#
+```
+
+```{r include=TRUE, warning=FALSE, fig.width=8, fig.height=8}
+combined.degrees = degree(g_combined)
+mean(combined.degrees)
+median(combined.degrees)
+transitivity(g_combined)
+
+experimental.degrees = degree(g_experimental)
+mean(experimental.degrees)
+median(experimental.degrees)
+transitivity(g_experimental)
+
+# Degree distribution
+graph_dd_combined = degree_distribution(g_combined)
+graph_dd_experimental = degree_distribution(g_experimental)
+
+par(mfrow=c(2,1))
+hist(degree(g_combined), breaks = 50)
+hist(degree(g_experimental), breaks = 50)
+
+par(mfrow=c(1,1))
+plot(0:(length(graph_dd_combined)-1), graph_dd_combined, log = 'xy', xlab = 'degree', ylab='p(k)', main='Node degree distribution', col='blue', type = 'p', ylim=c(1e-4, 5e-1))
+points(0:(length(graph_dd_experimental)-1), graph_dd_experimental, col='red', type='p')
+legend('topright', col=c('blue', 'red'), legend = c('combined score', 'experimental only'), lty = 1)
+
+# Experimental against combined centralities
+keys <- unique(c(V(g_combined)$name, V(g_experimental)$name))
+plot(combined.degrees[keys], experimental.degrees[keys], pch=20)
+abline(b=1, a=0)
+plot(combined.degrees[keys], experimental.degrees[keys], pch=20, log='xy')
+abline(b=1, a=0)
+
+
+combined.transitivity = transitivity(g_combined, type = 'local')
+experimental.transitivity = transitivity(g_experimental, type='local')
+names(combined.transitivity) = V(g_combined)$name
+names(experimental.transitivity) = V(g_experimental)$name
+plot(combined.transitivity[keys], experimental.transitivity[keys], pch=20)
+abline(b=1, a=0)
+
+
+combined.betweenness = betweenness(g_combined)
+experimental.betweenness = betweenness(g_experimental)
+plot(combined.betweenness[keys], experimental.betweenness[keys], pch=20)
+abline(b=1, a=0)
+plot(combined.betweenness[keys], experimental.betweenness[keys], pch=20, log='xy')
+abline(b=1, a=0)
+```
+
+What can we say about the global and local similarity of the two networks ?
+
+You may have noticed that the networks are in fact not fully connected but consist of several disconnected components. Using the `decompose` and `components` functions, redefine our networks as their biggest connected component before proceeding.
+
+```{r}
+g_combined = decompose(g_combined)[[which.max(components(g_combined)$csize)]]
+g_experimental = decompose(g_experimental)[[which.max(components(g_experimental)$csize)]]
+```
+
+
+These networks are the product of evolution, a process that is largely stochastic. But as we saw earlier, there are many ways te randomly generate networks.
+Using the extracted biggest components, you may try to create random networks with the same number of nodes and edges and compare their characteristics to the observed networks.
+
+```{r include=TRUE}
+N_nodes <- length(V(g_experimental))
+N_edges <- length(E(g_experimental))
+
+# See fit_power_law() and sample_fitness()
+```
+
+
+### The first GM babies
+
+In November 2018, He Jiankui (formerly) from the Southern University of Science and Technology of China in Shenzhen claimed to have helped make the world’s first genome-edited babies — [twin girls](https://en.wikipedia.org/wiki/Lulu_and_Nana_controversy), who were born by mid-october 2018. He used the powerful CRISPR–Cas9 genome-editing tool to disable a gene called CCR5, to attempt to confer genetic resistance to the HIV virus.
+
+We will perform a short analysis of the gene in question in the human protein-protein interaction network. First, download the human interaction network from STRING-db if necessary and perform the same steps you have done for loading the data into an igraph object.
+
+
+The alias of CCR5 is [9606.ENSP00000292303](https://www.uniprot.org/uniprot/P51681) and it is present in our combined_score network. You will retrieve its degree and centrality as measured by various algorithms (try `betweenness`, `eigen_centrality` and `closeness`). Can CCR5 be considered a central hub of the human protein-protein interaction network ?
+```{r include=TRUE}
+ccr5 = '9606.ENSP00000292303'
+# Get the centrality of ccr5 according to the betweenness, closeness and eigen centrality measures, and compare it to the rest of the nodes.
+```
+
+Create a subgraph with CCR5's immediate neighbours and plot its degree distribution. Does the subgraph centered on CCR5 look like a scale-free network ? Try to find a biological meaning for the observed distribution (You will find more functional information on the STRING website https://string-db.org/cgi/network.pl?taskId=x7tZxJkWIYqI)
+
+```{r}
+# Custom plot function
+plot_graph = function(g, center=NULL){
+  # g : igraph graph object
+    V(g)$size = log(degree(g)+1)
+    V(g)$frame.color <- "white"
+    if(!is.null(center)){
+        V(g)$color = 'orange'
+        V(g)$color[V(g)$name==center] = 'blue'
+    }
+    plot(g, vertex.label=NA, edge.width=0.5)
+}
+```
+
+```{r}
+plot_graph(make_ego_graph(graph = g_combined, nodes = ccr5, order = 1)[[1]], center = ccr5)
+```
+
+Now try to expand the subgraph adding the 2nd, 3rd neighbours of CCR5. How fast does the network grow ?
+
+```{r}
+# Look for a function in the documentation that returns the n-th order neighborhood of a node!
+```
+
+
+Bonus question : what kind of evidence is there for the interactions of CCR5 with its neighbours? 
+
+
+[^1]: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC539959/

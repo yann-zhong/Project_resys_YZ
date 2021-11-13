@@ -1,0 +1,29 @@
+{
+    "id": "3C161145",
+    "path": "D:/Documents/M2 BIM Info/RESYS/Projet/Project_resys_YZ/Resys_project.Rmd",
+    "project_path": "Resys_project.Rmd",
+    "type": "r_markdown",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1636632586793.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "chunk_output_type": "inline",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "112,3",
+        "scrollLine": "93",
+        "ignored_words": "browseVignettes,preprocessing\n"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1636819887,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1636819887440,
+    "read_only": false,
+    "read_only_alternatives": []
+}
