@@ -16,6 +16,8 @@ jupyter:
   output: html_Resys_Project_notebook
 ---
 
+Hello Alexis
+
 # Introduction
 The project starts off simply with the installation of the required packages.
 First, we make sure BiocManager is installed, which is a necessity for pretty much every subsequent bioinfo package we will be using next.
