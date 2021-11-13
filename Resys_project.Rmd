@@ -16,7 +16,7 @@ jupyter:
   output: html_Resys_Project_notebook
 ---
 
-Hello Alexis
+Hi
 
 # Introduction
 The project starts off simply with the installation of the required packages.
