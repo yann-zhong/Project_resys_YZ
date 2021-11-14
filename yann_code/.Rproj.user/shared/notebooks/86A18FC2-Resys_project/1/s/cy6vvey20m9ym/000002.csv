@@ -1,0 +1,30 @@
+"0","#DEBUGGING"
+"0",""
+"0","library(RTN)"
+"0","data(tniData)"
+"0","#data(dt4rtn_TFs)"
+"0",""
+"0",""
+"0","tfs <- read.table(""dt4rtn_TFs.txt"")"
+"0","tfs = setNames(tfs$V2, tfs$V1)"
+"0","names(tfs) -> bkp"
+"0","tfs <- annotation$ID[match(names(tfs), annotation$Symbol)]"
+"0","tfs <- as.character(tfs)"
+"0","names(tfs) <- bkp"
+"0",""
+"0","tfs <- tfs[-which(is.na(tfs))]"
+"0",""
+"0","rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)"
+"1","-Preprocessing for input data...
+"
+"1","--Mapping 'expData' to 'rowAnnotation'...
+"
+"1","--Removing duplicated genes (keep max coefficient of variation!)...
+"
+"1","--Checking 'regulatoryElements' in 'rowAnnotation'...
+"
+"1","--Checking 'expData'...
+"
+"1","-Preprocessing complete!
+
+"
