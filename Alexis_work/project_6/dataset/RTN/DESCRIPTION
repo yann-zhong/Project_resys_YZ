@@ -1,0 +1,30 @@
+Package: RTN
+Type: Package
+Title: RTN: Reconstruction of Transcriptional regulatory Networks and
+        analysis of regulons
+Version: 2.8.5
+Author: Clarice Groeneveld [ctb], Gordon Robertson [ctb], Xin Wang [aut], Michael Fletcher [aut], Florian Markowetz [aut], Kerstin Meyer [aut], and Mauro Castro [aut]
+Maintainer: Mauro Castro <mauro.a.castro@gmail.com>
+Depends: R (>= 3.5.0), methods
+Imports: RedeR, minet, viper, mixtools, snow, limma, data.table,
+        IRanges, igraph, S4Vectors, SummarizedExperiment
+Suggests: RUnit, BiocGenerics, BiocStyle, knitr, rmarkdown
+Description: A transcriptional regulatory network (TRN) consists of a collection of transcription factors (TFs) and the regulated target genes. TFs are regulators that recognize specific DNA sequences and guide the expression of the genome, either activating or repressing the expression the target genes. The set of genes controlled by the same TF forms a regulon. This package provides classes and methods for the reconstruction of TRNs and analysis of regulons.
+License: Artistic-2.0
+biocViews: Transcription, Network, NetworkInference, NetworkEnrichment,
+        GeneRegulation, GeneExpression, GraphAndNetwork,
+        GeneSetEnrichment, GeneticVariability
+VignetteBuilder: knitr
+URL: http://dx.doi.org/10.1038/ncomms3464
+Collate: ClassUnions.R AllChecks.R AllClasses.R AllGenerics.R
+        AllSupplementsTNA.R AllSupplementsTNI.R AllSupplementsAVS.R
+        AllPlotsTNA.R AllPlotsAVS.R TNA-methods.R TNI-methods.R
+        AVS-methods.R TNI-pruning.R
+LazyLoad: yes
+git_url: https://git.bioconductor.org/packages/RTN
+git_branch: RELEASE_3_9
+git_last_commit: b8c66dc
+git_last_commit_date: 2019-09-15
+Date/Publication: 2019-09-16
+NeedsCompilation: no
+Packaged: 2019-09-17 00:28:03 UTC; biocbuild

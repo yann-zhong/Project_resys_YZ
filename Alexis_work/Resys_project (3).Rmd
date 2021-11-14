@@ -1,0 +1,118 @@
+---
+jupyter:
+  title: "Resys_Project"
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+  language_info:
+    codemirror_mode: r
+    file_extension: .r
+    mimetype: text/x-r-source
+    name: R
+    pygments_lexer: r
+    version: 3.6.1
+  nbrmd_format_version: '1.0'
+  output: html_Resys_Project_notebook
+---
+
+# Introduction
+The project starts off simply with the installation of the required packages.
+First, we make sure BiocManager is installed, which is a necessity for pretty much every subsequent bioinfo package we will be using next.
+Then, we install RTN (for inferring regulatory network), snow (for parallel processing in RTN), and finally RedeR for visualization.
+
+For preprocessing, we install Biobase and GEOquery for base functions in Bioconductor and accessing GEO data respectively.
+
+```{r echo=TRUE, eval=FALSE}
+# Installation of required packages, only run if not installed yet
+
+# RTN for inferring the regulatory network based on the downloaded gene expression data
+# snow for parallel processing in RTN
+# RedeR for better visualization of inferred network
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# For main code
+BiocManager::install("RTN")
+BiocManager::install("snow")
+BiocManager::install("RedeR")
+
+# For preprocessing
+BiocManager::install("Biobase")
+BiocManager::install("GEOquery")
+
+```
+
+Activate libraries (and open documentation for RTN and RedeR)
+
+```{r echo=TRUE, eval=FALSE}
+# Load required libraries and open vignettes
+# (A vignette is a long-form guide to your package.)
+library(igraph)
+library(RTN)
+library(snow)
+library(RedeR)
+browseVignettes('RTN')
+browseVignettes('RedeR')
+# Note: no vignettes for snow, use snow.pdf found at https://cran.r-project.org/web/packages/snow/index.html 
+
+# For preprocessing
+library(Biobase)
+library(GEOquery)
+
+```
+
+
+
+# Preprocessing, as provided in the Slack channel
+We get the necessary files remotely and put them inside data objects in our environment.
+We do some stuff on the data(?) and throw into gset to run exp and log functions (?)
+
+```{r echo=TRUE, eval=FALSE}
+# load series and platform data from GEO
+
+Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 2) # to prevent size connection error on getGEO
+#readr::local_edition(1) # to prevent row.names error on getGEO
+
+gset <- getGEO("GSE21257", GSEMatrix =TRUE, AnnotGPL=FALSE) # get GEO data from notebook
+if (length(gset) > 1) idx <- grep("GPL10295", attr(gset, "names")) else idx <- 1 # 
+gset <- gset[[idx]]
+
+# log2 transform
+ex <- exprs(gset)
+exprs(gset) <- log2(ex)
+```
+
+# Get the gene names:
+(Download full table here https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GPL10295)
+Or simply present in the MINiML files as "GPL10295-tbl-1.txt", which we need to add the header to from this link: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?view=data&acc=GPL10295&id=10175&db=GeoDb_blob44
+
+```{r echo=TRUE, eval=FALSE}
+
+annotation <- read.csv(file = 'GPL10295-tbl-1.txt', skip = 7, sep = '\t') 
+gexpIDs <- annotation[,c('ID', 'Illumina_Gene', 'Symbol')]
+
+```
+
+
+# Start RTN:
+Note: the below cell won't run yet, since we don't have dt4rtn (and not sure what it is yet?)
+
+```{r echo=TRUE, eval=FALSE}
+data(dt4rtn)
+
+tfs <- dt4rtn$tfs
+names(tfs) -> bkp
+tfs <- annotation$ID[match(names(tfs), annotation$Symbol)]
+tfs <- as.character(tfs)
+names(tfs) <- bkp
+
+tfs <- tfs[-which(is.na(tfs))]
+
+rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)
+
+```
+
+
+
