@@ -1,0 +1,61 @@
+"0","# Load required libraries and open vignettes"
+"0","# (A vignette is a long-form guide to your package.)"
+"0","library(igraph)"
+"2","
+Attaching package: ‘igraph’
+
+"
+"2","The following objects are masked from ‘package:BiocGenerics’:
+
+    normalize, path, union
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    decompose, spectrum
+
+"
+"2","The following object is masked from ‘package:base’:
+
+    union
+
+"
+"0","library(RTN)"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
+"0","library(snow)"
+"2","
+Attaching package: ‘snow’
+
+"
+"2","The following objects are masked from ‘package:BiocGenerics’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ, clusterExport,
+    clusterMap, clusterSplit, parApply, parCapply, parLapply, parRapply, parSapply
+
+"
+"2","The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ, clusterExport,
+    clusterMap, clusterSplit, makeCluster, parApply, parCapply, parLapply,
+    parRapply, parSapply, splitIndices, stopCluster
+
+"
+"0","library(RedeR)"
+"2","***This is RedeR 1.40.5! For a quick start, please type 'vignette('RedeR')'.
+   Supporting information is available at Genome Biology 13:R29, 2012,
+   (doi:10.1186/gb-2012-13-4-r29). 
+"
+"0","browseVignettes('RTN')"
+"0","browseVignettes('RedeR')"
+"0","# Note: no vignettes for snow, use snow.pdf found at https://cran.r-project.org/web/packages/snow/index.html "
+"0",""
+"0","# For preprocessing"
+"0","library(Biobase)"
+"0","library(GEOquery)"
+"2","Setting options('download.file.method.GEOquery'='auto')
+"
+"2","Setting options('GEOquery.inmemory.gpl'=FALSE)
+"
