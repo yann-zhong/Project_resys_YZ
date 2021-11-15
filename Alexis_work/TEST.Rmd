@@ -1,0 +1,288 @@
+---
+jupyter:
+  title: "TEST"
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+  language_info:
+    codemirror_mode: r
+    file_extension: .r
+    mimetype: text/x-r-source
+    name: R
+    pygments_lexer: r
+    version: 3.6.1
+  nbrmd_format_version: '1.0'
+  output: html_Resys_Project_notebook
+---
+
+#####                                                                     INTRODUCTION
+The project starts off simply with the installation of the required packages.
+First, we make sure BiocManager is installed, which is a necessity for pretty much every subsequent bioinfo package we will be using next.
+Then, we install RTN (for inferring regulatory network), snow (for parallel processing in RTN), and finally RedeR for visualization.
+
+For preprocessing, we install Biobase and GEOquery for base functions in Bioconductor and accessing GEO data respectively.
+
+```{r echo=TRUE, eval=FALSE}
+# Installation of required packages, only run if not installed yet
+
+# RTN for inferring the regulatory network based on the downloaded gene expression data
+# snow for parallel processing in RTN
+# RedeR for better visualization of inferred network
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# For main code
+BiocManager::install("RTN")
+BiocManager::install("snow")
+BiocManager::install("RedeR")
+
+# For preprocessing
+BiocManager::install("Biobase")
+BiocManager::install("GEOquery")
+
+
+```
+
+Activate libraries (and open documentation for RTN and RedeR)
+
+```{r echo=TRUE, eval=FALSE}
+# Load required libraries and open vignettes
+# (A vignette is a long-form guide to your package.)
+library(igraph)
+library(RTN)
+library(snow)
+library(RedeR)
+browseVignettes('RTN')
+browseVignettes('RedeR')
+# Note: no vignettes for snow, use snow.pdf found at https://cran.r-project.org/web/packages/snow/index.html 
+
+# For preprocessing
+library(Biobase)
+library(GEOquery)
+
+```
+
+
+
+###                                              Preprocessing, as provided in the Slack channel
+We get the necessary files remotely and put them inside data objects in our environment.
+We do some stuff on the data(?) and throw into gset to run exp and log functions (?)
+
+```{r echo=TRUE, eval=FALSE}
+# load series and platform data from GEO
+
+Sys.setenv("VROOM_CONNECTION_SIZE" = 131072 * 2) # to prevent size connection error on getGEO
+#readr::local_edition(1) # to prevent row.names error on getGEO
+
+gset <- getGEO("GSE21257", GSEMatrix =TRUE, AnnotGPL=FALSE) # get GEO data from notebook
+if (length(gset) > 1) idx <- grep("GPL10295", attr(gset, "names")) else idx <- 1 # 
+gset <- gset[[idx]]
+
+# log2 transform
+ex <- exprs(gset)
+exprs(gset) <- log2(ex)
+```
+
+# Get the gene names:
+(Download full table here https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GPL10295)
+Or simply present in the MINiML files as "GPL10295-tbl-1.txt", which we need to add the header to from this link: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?view=data&acc=GPL10295&id=10175&db=GeoDb_blob44
+
+```{r echo=TRUE, eval=FALSE}
+setwd("C:/Users/Alexis Trang/Documents/Cours_UPMC_M2/RESYS/Alexis_work/copy_dataset")
+annotation <- read.csv(file = 'GPL10295-tbl-1.txt', skip = 7, sep = '\t') 
+gexpIDs <- annotation[,c('ID', 'Illumina_Gene', 'Symbol')]
+
+```
+
+
+# Start RTN:
+Note: the below cell won't run yet, since we don't have dt4rtn (and not sure what it is yet?)
+
+```{r echo=TRUE, eval=FALSE}
+data(dt4rtn)
+
+tfs <- dt4rtn$tfs
+names(tfs) -> bkp
+tfs <- annotation$ID[match(names(tfs), annotation$Symbol)]
+tfs <- as.character(tfs)
+names(tfs) <- bkp
+
+tfs <- tfs[-which(is.na(tfs))]
+
+
+
+```
+
+#First step of the piepline
+```{r}
+rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)
+```
+
+
+#Permutaion analysis
+```{r}
+rtni <- tni.permutation(rtni, nPermutations = 1000)
+```
+#Remove unstable interactions + creation bootstrap network
+```{r}
+rtni <- tni.bootstrap(rtni)
+```
+#Application of ARACNe to remove the weakest interactions
+```{r}
+rtni <- tni.dpi.filter(rtni)
+```
+#Summary of the regulatory network
+```{r}
+tni.regulon.summary(rtni)
+```
+
+#Specific infos about HEY2 because why not
+```{r}
+tni.regulon.summary(rtni, regulatoryElements = "FOXM1")
+```
+#regulons, including the weight assigned for each interaction.
+#The absolute value of a weight represents the MI value, while the sign (+/-) indicates the predicted mode of action based on the Pearson's correlation between the regulator and its targets.
+```{r}
+regulons <- tni.get(rtni, what = "regulons.and.mode", idkey = "SYMBOL")
+regulons$FOXM1
+
+```
+#retrieve the inferred regulons into an `igraph-class` object
+```{r}
+g <- tni.graph(rtni, tfs = c("FOXM1","E2F2","PTTG1"))
+g <- tni.graph(rtni, tfs = names(tfs))
+```
+#plot with RedR
+```{r}
+rdp <- RedPort()
+calld(rdp)
+addGraph(rdp, g, layout=NULL)
+addLegend.color(rdp, g, type="edge")
+addLegend.shape(rdp, g)
+relax(rdp, ps = TRUE)
+```
+###                                                   DIFFERENTIAL GENE EXPRESSION ANALYSIS WITH LIMMA
+
+# Loading the library limma
+```{r}
+library(limma)
+```
+
+```{r}
+## move to a project folder and create a result folder in it 
+basedir <- "C:/Users/Alexis Trang/Documents/Cours_UPMC_M2/RESYS/Alexis_work"
+setwd(basedir)
+ 
+resfolder <- "GEO2R.GSE21257.results"
+if (! file.exists(resfolder) ){
+    dir.create(resfolder, showWarnings = FALSE, recursive = FALSE, mode = "0777")
+    Sys.chmod(resfolder, mode = "0777", use_umask=TRUE)
+    }
+```
+
+
+```{r}
+# make proper column names to match toptable 
+fvarLabels(gset) <- make.names(fvarLabels(gset))
+ 
+# group names for all samples (Simvastatin excluded)
+sml <- c("G0","G0","G0","G1","G1","G1","X","X","X","X","X","X");
+ 
+# eliminate samples marked as "X" (Simvastatin not used here)
+sel <- which(sml != "X")
+sml <- sml[sel]
+gset <- gset[ ,sel]
+ 
+# log2 transform
+ex <- exprs(gset)
+qx <- as.numeric(quantile(ex, c(0., 0.25, 0.5, 0.75, 0.99, 1.0), na.rm=T))
+LogC <- (qx[5] > 100) ||
+  (qx[6]-qx[1] > 50 && qx[2] > 0) ||
+  (qx[2] > 0 && qx[2] < 1 && qx[4] > 1 && qx[4] < 2)
+ 
+if (LogC) { ex[which(ex <= 0)] <- NaN
+            exprs(gset) <- log2(ex) }
+```
+
+
+```{r}
+#set up the DE contrasts and proceed with analysis
+fl <- as.factor(sml)
+gset$description <- fl
+design <- model.matrix(~ description + 0, gset)
+colnames(design) <- levels(fl)
+fit <- lmFit(gset, design)
+ 
+# the differential expression contrast is set here to "LPS" versus "Control"
+cont.matrix <- makeContrasts(G1-G0, levels=design)
+fit2 <- contrasts.fit(fit, cont.matrix)
+fit2 <- eBayes(fit2, 0.01)
+# tT <- topTable(fit2, adjust="fdr", sort.by="B", number=250)
+tT <- topTable(fit2, adjust="fdr", sort.by="B", number=nrow(fit2))
+```
+
+```{r}
+#Save the resulting table to file for reuse
+filename <- "GSE21257.data.tsv"
+outfile <- paste(basedir, resfolder, filename, sep="/")
+write.table(tT, file=outfile, 
+            quote = FALSE, dec=",", sep="\t", col.names = NA, row.names = T)
+```
+#DGE Analysis results are saved in "tT" variable
+
+
+
+```{r}
+#Filtering: getting all lines with p-val<0.05
+sel_ind<-which(tT$P.Value < 0.05)
+
+selected_hits<-tT[sel_ind,3]
+selected_phenotype<-tT[sel_ind,8]
+names(selected_phenotype)<-selected_hits
+
+selected_phenoIDs<-tT[c(3,2,6)] #selected phenoIDs
+duplicata<-which(duplicated(selected_phenoIDs$Illumina_Gene))
+selected_phenoIDs<-selected_phenoIDs[-duplicata,]
+
+
+```
+
+
+```{r}
+#Without selection
+hits<-tT$Illumina_Gene
+
+phenotype<-tT$logFC
+
+names(phenotype)<-hits
+
+phenoIDs<-tT[c(3,2,6)] #selected phenoIDs
+duplicata<-which(duplicated(phenoIDs$Illumina_Gene))
+phenoIDs<-phenoIDs[-duplicata,]
+```
+
+
+
+###                                                                     TNA
+```{r}
+# Input 1: 'object', a TNI object with regulons
+# Input 2: 'phenotype', a named numeric vector, usually log2 differential expression levels
+# Input 3: 'hits', a character vector, usually a set of differentially expressed genes
+# Input 4: 'phenoIDs', an optional data frame with gene anottation mapped to the phenotype
+data(tnaData)
+rtna <- tni2tna.preprocess(object = rtni, 
+                           phenotype = phenotype, 
+                           hits = hits, 
+                           phenoIDs = phenoIDs)
+```
+
+
+
+
+
+
+
+
+

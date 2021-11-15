@@ -1,0 +1,79 @@
+exportClasses (RedPort)
+
+exportMethods (
+
+  calld,
+  ping,
+  version,
+  updateGraph,
+  getGraph,
+  addGraph,
+  addSeries,
+  duplicateGraph,
+  addSubgraph,
+  addSubgraph.list,
+  addLegend.color,
+  addLegend.size,
+  addLegend.shape,
+  relax,
+
+  getNodes,
+  getNodeIDs,
+  addNodes,        
+  deleteNodes,     
+  nestNodes,     
+  nesthc,  
+                  
+  updateContainerSize,
+  mergeOutEdges,
+  getContainerComponets,
+  mergeNodes,      
+                  
+  getEdges,
+  getEdgeIDs,
+  getSourceEdgeIDs,
+  getTargetEdgeIDs,
+  setArrowDirection,  
+  addEdges,               
+  deleteEdges,     
+  addEdgeBetweenContainers,
+                  
+  selectEdges,
+  selectNodes,
+  selectAllEdges,
+  selectAllNodes,
+  selectGraph,
+
+  deSelectEdges,
+  deSelectNodes,
+  deSelectGraph,
+
+  deleteSelectedEdges,
+  deleteSelectedNodes,
+                  
+  isDynamicsActive,
+  exitd,
+  resetd
+
+  )
+
+export(
+  RedPort,
+  gtoy.rm,
+  att.setv,
+  att.sete,
+  att.mapv,
+  att.mape,
+  subg,
+  cea,
+  .rederpost
+  )
+
+import(methods)
+importFrom(igraph,is.mutual,delete_vertex_attr,vertex_attr_names,delete.edges, delete_edge_attr,edge_attr_names, V, E,'V<-','E<-')
+importFrom(utils, setTxtProgressBar, txtProgressBar, close.socket, make.socket, read.socket, write.socket)
+importFrom(graphics, hist, legend, lines, par, plot, polygon, rect, text)
+importFrom(grDevices, colorRampPalette, grey, terrain.colors, col2rgb)
+importFrom(stats, cor, density, p.adjust, quantile, runif)
+
+

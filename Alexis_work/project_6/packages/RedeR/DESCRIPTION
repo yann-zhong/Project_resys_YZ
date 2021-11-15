@@ -1,0 +1,24 @@
+Package: RedeR
+Type: Package
+Title: Interactive visualization and manipulation of nested networks
+Version: 1.32.2
+Author: Mauro Castro, Xin Wang, Florian Markowetz
+Maintainer: Mauro Castro <mauro.a.castro@gmail.com>
+Depends: R (>= 3.3.3), methods
+Imports: igraph
+Suggests: pvclust, BiocStyle, knitr, rmarkdown
+SystemRequirements: Java Runtime Environment (>= 6)
+Description: RedeR is an R-based package combined with a stand-alone Java application for interactive visualization and manipulation of modular structures, nested networks and multiple levels of hierarchical associations.
+License: GPL (>= 2)
+biocViews: Infrastructure, GraphAndNetwork, Software, Network,
+        Visualization, DataRepresentation
+VignetteBuilder: knitr
+URL: http://genomebiology.com/2012/13/4/R29
+LazyLoad: yes
+git_url: https://git.bioconductor.org/packages/RedeR
+git_branch: RELEASE_3_9
+git_last_commit: 845a380
+git_last_commit_date: 2019-07-21
+Date/Publication: 2019-07-22
+NeedsCompilation: no
+Packaged: 2019-07-22 23:51:59 UTC; biocbuild
