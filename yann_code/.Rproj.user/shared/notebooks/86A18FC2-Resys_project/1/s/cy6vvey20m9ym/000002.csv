@@ -1,9 +1,12 @@
 "0","#DEBUGGING"
 "0",""
 "0","library(RTN)"
+"2","Registered S3 method overwritten by 'data.table':
+  method           from
+  print.data.table     
+"
 "0","data(tniData)"
 "0","#data(dt4rtn_TFs)"
-"0",""
 "0",""
 "0","tfs <- read.table(""dt4rtn_TFs.txt"")"
 "0","tfs = setNames(tfs$V2, tfs$V1)"

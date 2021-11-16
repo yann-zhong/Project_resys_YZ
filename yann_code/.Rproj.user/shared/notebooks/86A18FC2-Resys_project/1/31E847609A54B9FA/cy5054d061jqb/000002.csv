@@ -1,0 +1,11 @@
+"0","library(limma)
+"
+"2","
+Attaching package: ‘limma’
+
+"
+"2","The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+"

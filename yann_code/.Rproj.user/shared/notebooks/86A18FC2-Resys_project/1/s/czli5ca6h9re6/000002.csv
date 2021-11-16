@@ -1,0 +1,30 @@
+"0","BiocManager::install(""limma"")
+"
+"2","'getOption(""repos"")' replaces Bioconductor standard repositories, see '?repositories' for
+details
+
+replacement repositories:
+    CRAN: https://cran.rstudio.com/
+
+"
+"2","Bioconductor version 3.13 (BiocManager 1.30.16), R 4.1.1 (2021-08-10)
+"
+"2","Warning:"
+"2"," package(s) not installed when version(s) same as current; use `force = TRUE` to re-install:
+  'limma'
+"
+"2","Old packages: 'conquer', 'glue', 'igraph', 'nloptr', 'RcppArmadillo', 'readr', 'sp',
+  'tibble', 'uuid', 'vroom', 'xfun'
+"
+"1","Update all/some/none? [a/s/n]: "
+"0","a"
+"2","Warning:"
+"2"," package ‘igraph’ is in use and will not be installed
+"
+"1","
+"
+"1",""
+"1","  There are binary versions available but the source versions are later"
+"1",""
+"1",":
+"

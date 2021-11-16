@@ -1,0 +1,123 @@
+"1","
+"
+"1","  Binaries will be installed
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/conquer_1.2.0.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 1205699 bytes (1.1 MB)
+"
+"2","downloaded 1.1 MB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/glue_1.4.2.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 155693 bytes (152 KB)
+"
+"2","downloaded 152 KB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/nloptr_1.2.2.2.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 1244239 bytes (1.2 MB)
+"
+"2","downloaded 1.2 MB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/RcppArmadillo_0.10.7.0.0.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 2704940 bytes (2.6 MB)
+"
+"2","downloaded 2.6 MB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/readr_2.0.2.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 1794824 bytes (1.7 MB)
+"
+"2","downloaded 1.7 MB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/sp_1.4-5.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 1824901 bytes (1.7 MB)
+"
+"2","downloaded 1.7 MB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/tibble_3.1.5.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 871287 bytes (850 KB)
+"
+"2","downloaded 850 KB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/uuid_1.0-2.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 45839 bytes (44 KB)
+"
+"2","downloaded 44 KB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/vroom_1.5.5.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 2045796 bytes (2.0 MB)
+"
+"2","downloaded 2.0 MB
+
+"
+"2","trying URL 'https://cran.rstudio.com/bin/windows/contrib/4.1/xfun_0.27.zip'
+"
+"2","Content type 'application/zip'"
+"2"," length 381113 bytes (372 KB)
+"
+"2","downloaded 372 KB
+
+"
+"1","package ‘conquer’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘glue’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘nloptr’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘RcppArmadillo’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘readr’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘sp’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘tibble’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘uuid’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘vroom’ successfully unpacked and MD5 sums checked
+"
+"1","package ‘xfun’ successfully unpacked and MD5 sums checked
+"
+"2","Warning:"
+"2"," cannot remove prior installation of package ‘xfun’
+"
+"2","Warning in file.copy(savedcopy, lib, recursive = TRUE) :"
+"2","
+ "
+"2"," problem copying C:\Users\yannz\OneDrive\Documents\R\win-library\4.1\00LOCK\xfun\libs\x64\xfun.dll to C:\Users\yannz\OneDrive\Documents\R\win-library\4.1\xfun\libs\x64\xfun.dll: Permission denied
+"
+"2","Warning:"
+"2"," restored ‘xfun’
+"
+"1","
+"
+"1",""
+"1","The downloaded binary packages are in
+	C:\Users\yannz\AppData\Local\Temp\RtmpqMwl7I\downloaded_packages"
+"1",""
+"1","
+"

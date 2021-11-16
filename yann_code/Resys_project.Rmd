@@ -19,7 +19,7 @@ jupyter:
 # Introduction
 The project starts off simply with the installation of the required packages.
 First, we make sure BiocManager is installed, which is a necessity for pretty much every subsequent bioinfo package we will be using next.
-Then, we install RTN (for inferring regulatory network), snow (for parallel processing in RTN), and finally RedeR for visualization.
+Then, we install RTN (for inferring regulatory network), snow (for parallel processing in RTN), and finally RedeR for visualization. We also install limma to allow for model and DE analysis of our data.a
 
 For preprocessing, we install Biobase and GEOquery for base functions in Bioconductor and accessing GEO data respectively.
 
@@ -37,6 +37,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("RTN")
 BiocManager::install("snow")
 BiocManager::install("RedeR")
+BiocManager::install("limma")
 
 # For preprocessing
 BiocManager::install("Biobase")
@@ -44,7 +45,7 @@ BiocManager::install("GEOquery")
 
 ```
 
-Activate libraries (and open documentation for RTN and RedeR)
+Activate libraries (and open documentation for RTN, RedeR and limma)
 
 ```{r echo=TRUE, eval=FALSE}
 # Load required libraries and open vignettes
@@ -53,13 +54,16 @@ library(igraph)
 library(RTN)
 library(snow)
 library(RedeR)
+library(limma)
 browseVignettes('RTN')
 browseVignettes('RedeR')
+browseVignettes('limma')
 # Note: no vignettes for snow, use snow.pdf found at https://cran.r-project.org/web/packages/snow/index.html 
 
 # For preprocessing
 library(Biobase)
 library(GEOquery)
+
 
 ```
 
@@ -89,42 +93,25 @@ exprs(gset) <- log2(ex) # set all elements to log2
 Or simply present in the MINiML files as "GPL10295-tbl-1.txt", which we need to add the header to from this link: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?view=data&acc=GPL10295&id=10175&db=GeoDb_blob44
 
 ```{r echo=TRUE, eval=FALSE}
-
 annotation <- read.csv(file = 'GPL10295-tbl-1.txt', skip = 7, sep = '\t') 
 # Read file skipping first 7 (commented ) lines
 gexpIDs <- annotation[,c('ID', 'Illumina_Gene', 'Symbol')]
 # Creates a gexpIDs variable and put ID, ILlumina_Gene and Symbol columns inside
 ```
 
-# Start RTN:
+# Start RTN, with preprocessing
+Of note: the tni constructor serves to create rtni, which is a TNI class object.
+As according to documentation: the constructor requires a list with 3 objects: a named gene expression matrix (ex), a vector listing genes regarded as TFs (tfs) and a data frame with gene annotations (gexpIDs).
 
 ```{r echo=TRUE, eval=FALSE}
-library(RTN)
-dt4rtn_TFs <- read.table("dt4rtn_TFs.txt")
-#data(dt4rtn_TFs) # Load the dataset "dt4rtn" into the env
-
-tfs = setNames(tfs$V2, tfs$V1)
-names(tfs) -> bkp
-tfs <- annotation$ID[match(names(tfs), annotation$Symbol)]
-tfs <- as.character(tfs)
-names(tfs) <- bkp
-
-tfs <- tfs[-which(is.na(tfs))]
-
-rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)
-
-```
-
-```{r} 
 #DEBUGGING
 
 library(RTN)
 data(tniData)
 #data(dt4rtn_TFs)
 
-
 tfs <- read.table("dt4rtn_TFs.txt")
-tfs = setNames(tfs$V2, tfs$V1)
+tfs = setNames(tfs$V2, tfs$V1) # by default V1 and V2 are
 names(tfs) -> bkp
 tfs <- annotation$ID[match(names(tfs), annotation$Symbol)]
 tfs <- as.character(tfs)
@@ -133,6 +120,61 @@ names(tfs) <- bkp
 tfs <- tfs[-which(is.na(tfs))]
 
 rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)
+```
+
+# RTN main body, and visualization
+We infer the RTN by running a permutation function with at least 1000 runs. This takes a fair amount of time. Then, both the unstable interactions as well as the weak interactions are removed by use of bootstraping and ARACNE respectively, and regulon information is displayed.
+
+```{r echo=TRUE, eval=FALSE}
+
+# Infer an RTN by permutation analysis, with 1000 permutations
+rtni <- tni.permutation(rtni, nPermutations = 1000)
+# Remove unstable interactions
+rtni <- tni.bootstrap(rtni)
+# Run ARACNE to remove weakest interactions in any triplet
+rtni <- tni.dpi.filter(rtni)
+# Regulon information
+tni.regulon.summary(rtni)
+
+```
+
+Here are numerous... failed attempts to export the rtni object so that this doesn't have to be run again in case we accidentally clear the global environment.
+
+```{r echo=TRUE, eval=FALSE}
+
+#write.table(rtni, file = "rtni.txt", sep = "\t")
+#write.csv(rtni, file = "rtni.csv")
+
+library(readr)
+#write_tsv(rtni, file = "rtni.txt")
+#write_csv(rtni, file = "rtni.csv")
+
+```
+
+Plot out the network using all the regulons' names as a parameter - rather than the 5 that are given as a tutorial.
+Then, we use RedeR to visualize the inferred network. 
+
+```{r echo=TRUE, eval=FALSE}
+
+# Create an object comprised of all regulons
+regulons <- tni.get(rtni, what = "regulons.and.mode", idkey = "SYMBOL")
+head(regulons$AEBP1)
+#head(regulons$AFF3)
+#head(regulons$AR)
+
+save.image(file = "rtni_backup.RData")
+
+# With all elements:
+g <- tni.graph(rtni, regulatoryElements = names(regulons))
+# With list of top 10 hits:
+g <- tni.graph(rtni, regulatoryElements = c("ZNF91","ZNF264","YEATS4","TRPS1","SOX2","PAX7","MYCN","IRF7","IRF8","HIF1A"))
+
+rdp <- RedPort()
+calld(rdp)
+addGraph(rdp, g, layout=NULL)
+addLegend.color(rdp, g, type="edge")
+addLegend.shape(rdp, g)
+relax(rdp, ps = TRUE)
 
 ```
 

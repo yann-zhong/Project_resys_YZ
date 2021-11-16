@@ -1,0 +1,5 @@
+"0","write_tsv(rtni, file = ""rtni.txt"")
+"
+"2","Error in write_delim(x, file, delim = ""\t"", na = na, append = append,  : 
+  is.data.frame(x) is not TRUE
+"
