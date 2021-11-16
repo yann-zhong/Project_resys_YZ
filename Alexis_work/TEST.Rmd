@@ -101,9 +101,9 @@ gexpIDs <- annotation[,c('ID', 'Illumina_Gene', 'Symbol')]
 Note: the below cell won't run yet, since we don't have dt4rtn (and not sure what it is yet?)
 
 ```{r echo=TRUE, eval=FALSE}
-data(dt4rtn)
-
-tfs <- dt4rtn$tfs
+setwd("C:/Users/Alexis Trang/Documents/Cours_UPMC_M2/RESYS/Alexis_work/copy_dataset")
+tfs <- read.table("dt4rtn_TFs.txt")
+tfs = setNames(tfs$V2, tfs$V1)
 names(tfs) -> bkp
 tfs <- annotation$ID[match(names(tfs), annotation$Symbol)]
 tfs <- as.character(tfs)
@@ -111,7 +111,7 @@ names(tfs) <- bkp
 
 tfs <- tfs[-which(is.na(tfs))]
 
-
+rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)
 
 ```
 
@@ -243,6 +243,7 @@ selected_phenotype<-tT[sel_ind,8]
 names(selected_phenotype)<-selected_hits
 
 selected_phenoIDs<-tT[c(3,2,6)] #selected phenoIDs
+selected_phenoIDs[selected_phenoIDs$Symbol == "", ] <- "<NA>"
 duplicata<-which(duplicated(selected_phenoIDs$Illumina_Gene))
 selected_phenoIDs<-selected_phenoIDs[-duplicata,]
 
@@ -275,13 +276,37 @@ data(tnaData)
 rtna <- tni2tna.preprocess(object = rtni, 
                            phenotype = phenotype, 
                            hits = hits, 
-                           phenoIDs = phenoIDs)
+                           )
 ```
+The `tna.mra` function takes the `TNA-class` object and runs the Master Regulator Analysis (MRA) [@Carro2010] over a list of regulons (with corrections for multiple hypothesis testing). The MRA assesses the overlap between each regulon and the genes listed in the `hits` argument.
 
+```{r label='Run the MRA method', eval=TRUE, results='hide'}
+# Run the MRA method
+rtna <- tna.mra(rtna)
+``` 
 
+```{r label='Get MRA results', eval=TRUE, collapse=TRUE}
+# Get MRA results;
+#..setting 'ntop = -1' will return all results, regardless of a threshold
+mra <- tna.get(rtna, what="mra", ntop = -1)
+head(mra)
+``` 
 
+```{r label='Run GSEA method', eval=TRUE, results='hide'}
+# Run the GSEA method
+# Please set nPermutations >= 1000
+rtna <- tna.gsea1(rtna, stepFilter=FALSE, nPermutations=1000)
+``` 
+```{r label='Get GSEA results', eval=TRUE, collapse=TRUE}
+# Get GSEA results
+gsea1 <- tna.get(rtna, what="gsea1", ntop = -1)
+head(gsea1)
+``` 
 
-
+```{r label='Plot GSEA results', eval=FALSE}
+# Plot GSEA results
+tna.plot.gsea1(rtna, labPheno="abs(log2 fold changes)", ntop = -1)
+``` 
 
 
 
