@@ -1,0 +1,32 @@
+"0","addGraph(rdp, g, layout=NULL)
+"
+"2","*** Uploading graph to RedeR server...
+"
+"2","** ... nodes!
+"
+"2","** ... edges!
+"
+"2","*** Uploading node attributes...
+"
+"2","** ... node 'alias'
+"
+"2","** ... node 'size'
+"
+"2","** ... node 'shape'
+"
+"2","** ... node 'color'
+"
+"2","** ... node 'line color'
+"
+"2","** ... node 'font size'
+"
+"2","*** Uploading edge attributes...
+"
+"2","** ... edge 'arrow type/direction'
+"
+"2","** ... edge 'weight'
+"
+"2","** ... edge 'width'
+"
+"2","** ... edge 'color'
+"

@@ -1,6 +1,6 @@
 ---
 jupyter:
-  title: "TEST"
+  title: "PROJECT 6 - Alexis TRANG Yann ZHONG full code"
   kernelspec:
     display_name: R
     language: R
@@ -13,13 +13,17 @@ jupyter:
     pygments_lexer: r
     version: 3.6.1
   nbrmd_format_version: '1.0'
-  output: html_Resys_Project_notebook
+  output:
+    html_document:
+      df_print: paged
+      number_sections: yes
+      toc: true 
 ---
 
-#####                                                                     INTRODUCTION
+# INSTALLATIONS
 The project starts off simply with the installation of the required packages.
 First, we make sure BiocManager is installed, which is a necessity for pretty much every subsequent bioinfo package we will be using next.
-Then, we install RTN (for inferring regulatory network), snow (for parallel processing in RTN), and finally RedeR for visualization.
+Then, we install RTN (for inferring regulatory network), snow (for parallel processing in RTN), limma for model and DE analysis of our data and finally RedeR for visualization.
 
 For preprocessing, we install Biobase and GEOquery for base functions in Bioconductor and accessing GEO data respectively.
 
@@ -37,12 +41,11 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("RTN")
 BiocManager::install("snow")
 BiocManager::install("RedeR")
+BiocManager::install("limma")
 
 # For preprocessing
 BiocManager::install("Biobase")
 BiocManager::install("GEOquery")
-
-
 ```
 
 Activate libraries (and open documentation for RTN and RedeR)
@@ -54,6 +57,7 @@ library(igraph)
 library(RTN)
 library(snow)
 library(RedeR)
+library(limma)
 browseVignettes('RTN')
 browseVignettes('RedeR')
 # Note: no vignettes for snow, use snow.pdf found at https://cran.r-project.org/web/packages/snow/index.html 
@@ -61,14 +65,12 @@ browseVignettes('RedeR')
 # For preprocessing
 library(Biobase)
 library(GEOquery)
-
 ```
 
+# PREPROCESSING
 
-
-###                                              Preprocessing, as provided in the Slack channel
 We get the necessary files remotely and put them inside data objects in our environment.
-We do some stuff on the data(?) and throw into gset to run exp and log functions (?)
+A GSE21257_series_matrix.txt file is acquired, which is then referenced against the GPL10295 platform (the specific Illumina beadchip) in order to get the probes (and thus, the TFs) that interest us in the case of this network construction.
 
 ```{r echo=TRUE, eval=FALSE}
 # load series and platform data from GEO
@@ -85,7 +87,7 @@ ex <- exprs(gset)
 exprs(gset) <- log2(ex)
 ```
 
-# Get the gene names:
+To get the gene names:
 (Download full table here https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GPL10295)
 Or simply present in the MINiML files as "GPL10295-tbl-1.txt", which we need to add the header to from this link: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?view=data&acc=GPL10295&id=10175&db=GeoDb_blob44
 
@@ -93,12 +95,9 @@ Or simply present in the MINiML files as "GPL10295-tbl-1.txt", which we need to 
 setwd("C:/Users/Alexis Trang/Documents/Cours_UPMC_M2/RESYS/Alexis_work/copy_dataset")
 annotation <- read.csv(file = 'GPL10295-tbl-1.txt', skip = 7, sep = '\t') 
 gexpIDs <- annotation[,c('ID', 'Illumina_Gene', 'Symbol')]
-
 ```
 
-
-# Start RTN:
-Note: the below cell won't run yet, since we don't have dt4rtn (and not sure what it is yet?)
+Start RTN: use a TNI (Transcription Regulatory Network) constructor to create our network object, having passed through it all the relevant probe elements and TF names and their associated IDs.
 
 ```{r echo=TRUE, eval=FALSE}
 setwd("C:/Users/Alexis Trang/Documents/Cours_UPMC_M2/RESYS/Alexis_work/copy_dataset")
@@ -112,50 +111,40 @@ names(tfs) <- bkp
 tfs <- tfs[-which(is.na(tfs))]
 
 rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)
-
 ```
 
-#First step of the piepline
-```{r}
-rtni <- tni.constructor(expData=ex, regulatoryElements=tfs, rowAnnotation=gexpIDs, cvfilter=T)
-```
+# USING RTN TO INFER REGULATORY NETWORKS
 
-
-#Permutaion analysis
-```{r}
+Start with a permutation analysis.
+```{r echo=TRUE, eval=FALSE}
 rtni <- tni.permutation(rtni, nPermutations = 1000)
 ```
-#Remove unstable interactions + creation bootstrap network
-```{r}
+Remove unstable interactions + creation bootstrap network. Then, application of ARACNe to remove the weakest interactions.
+```{r echo=TRUE, eval=FALSE}
 rtni <- tni.bootstrap(rtni)
-```
-#Application of ARACNe to remove the weakest interactions
-```{r}
 rtni <- tni.dpi.filter(rtni)
 ```
-#Summary of the regulatory network
-```{r}
+Summary of the regulatory network, and an example to get specific information on one regulon (FOXM1), including the weight assigned for each interaction.
+The absolute value of a weight represents the MI value, while the sign (+/-) indicates the predicted mode of action based on the Pearson's correlation between the regulator and its targets.
+```{r echo=TRUE, eval=FALSE}
 tni.regulon.summary(rtni)
-```
-
-#Specific infos about HEY2 because why not
-```{r}
 tni.regulon.summary(rtni, regulatoryElements = "FOXM1")
-```
-#regulons, including the weight assigned for each interaction.
-#The absolute value of a weight represents the MI value, while the sign (+/-) indicates the predicted mode of action based on the Pearson's correlation between the regulator and its targets.
-```{r}
 regulons <- tni.get(rtni, what = "regulons.and.mode", idkey = "SYMBOL")
 regulons$FOXM1
+```
+Retrieve the inferred regulons into an `igraph-class` object
+```{r echo=TRUE, eval=FALSE}
+g <- tni.graph(rtni, regulatoryElements = names(regulons)) # For all regulons
+g <- tni.graph(rtni, regulatoryElements = c("ZNF91","ZNF264","YEATS4","TRPS1","SOX2","PAX7","MYCN","IRF7","IRF8","HIF1A")) # For the top 10 regulons
+# g <- tni.graph(rtni, tfs = names(tfs))
+```
 
-```
-#retrieve the inferred regulons into an `igraph-class` object
-```{r}
-g <- tni.graph(rtni, tfs = c("FOXM1","E2F2","PTTG1"))
-g <- tni.graph(rtni, tfs = names(tfs))
-```
-#plot with RedR
-```{r}
+# USING REDER TO VISUALIZE THE PRELIMINARY OUTPUT
+
+An Apache server is built with the RedPort function and assigned to a rdp object. Then, we call the object to launch the RedeR interface and use addGraph as well as addLegend in order to plot out our inferred network object. 
+The relax function is used to allow the complex network edges to be considered as springs that can exert repulsive or attractive forces based on a set of parameters, such as target length, stiffness, repel factor, cooling factor…
+
+```{r echo=TRUE, eval=FALSE}
 rdp <- RedPort()
 calld(rdp)
 addGraph(rdp, g, layout=NULL)
@@ -164,33 +153,10 @@ addLegend.shape(rdp, g)
 relax(rdp, ps = TRUE)
 ```
 
+# DIFFERENTIAL GENE EXPRESSION ANALYSIS WITH LIMMA
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###                                                   DIFFERENTIAL GENE EXPRESSION ANALYSIS WITH LIMMA
-
-# Loading the library limma
-```{r}
-library(limma)
-```
-
-```{r}
+Folder organisation
+```{r echo=TRUE, eval=FALSE}
 ## move to a project folder and create a result folder in it 
 basedir <- "C:/Users/Alexis Trang/Documents/Cours_UPMC_M2/RESYS/Alexis_work"
 setwd(basedir)
@@ -201,9 +167,8 @@ if (! file.exists(resfolder) ){
     Sys.chmod(resfolder, mode = "0777", use_umask=TRUE)
     }
 ```
-
-
-```{r}
+Log transformation of samples:
+```{r echo=TRUE, eval=FALSE}
 # make proper column names to match toptable 
 fvarLabels(gset) <- make.names(fvarLabels(gset))
  
@@ -225,9 +190,8 @@ LogC <- (qx[5] > 100) ||
 if (LogC) { ex[which(ex <= 0)] <- NaN
             exprs(gset) <- log2(ex) }
 ```
-
-
-```{r}
+Get topTable object, which provides the necessary data to continue analysis with the RTN package
+```{r echo=TRUE, eval=FALSE}
 #set up the DE contrasts and proceed with analysis
 fl <- as.factor(sml)
 gset$description <- fl
@@ -242,26 +206,21 @@ fit2 <- eBayes(fit2, 0.01)
 # tT <- topTable(fit2, adjust="fdr", sort.by="B", number=250)
 tT <- topTable(fit2, adjust="fdr", sort.by="B", number=nrow(fit2))
 ```
-
-```{r}
+Plot the logFCs:
+```{r echo=TRUE, eval=FALSE}
 indice_of_genes_in_tT<-c(1:length(tT$ID))
 log_FC=c(tT$logFC)
 plot(indice_of_genes_in_tT,log_FC)
 ```
-
-
-```{r}
-#Save the resulting table to file for reuse
+Save the resulting table for reuse:
+```{r echo=TRUE, eval=FALSE}
 filename <- "GSE21257.data.tsv"
 outfile <- paste(basedir, resfolder, filename, sep="/")
 write.table(tT, file=outfile, 
             quote = FALSE, dec=",", sep="\t", col.names = NA, row.names = T)
 ```
-#DGE Analysis results are saved in "tT" variable
-
-
-
-```{r}
+DGE Analysis results are saved in "tT" variable
+```{r echo=TRUE, eval=FALSE}
 #Filtering: getting 1000 first lines
 sel_ind<-c(1:1000)
 
@@ -273,11 +232,9 @@ selected_phenoIDs<-tT[c(3,2,6)] #selected phenoIDs
 selected_phenoIDs[selected_phenoIDs$Symbol == "", ] <- "<NA>"
 duplicata<-which(duplicated(selected_phenoIDs$Illumina_Gene))
 selected_phenoIDs<-selected_phenoIDs[-duplicata,]
-
-
 ```
-
-```{r}
+Filtering step 
+```{r echo=TRUE, eval=FALSE}
 #Filtering by getting the 1000 biggest logFC (in absolut value)
 log_FC<-c(tT$logFC)
 log_FC<-sort(abs(log_FC))
@@ -287,11 +244,9 @@ hits<-tT$Illumina_Gene[selected_ind]
 phenotype<-tT$logFC
 names(phenotype)<-tT$Illumina_Gene
 ```
-
-
-```{r}
+Skipping a filtering step
+```{r echo=TRUE, eval=FALSE}
 #Without selection
-
 phenotype<-tT$logFC
 
 names(phenotype)<-hits
@@ -301,10 +256,8 @@ duplicata<-which(duplicated(phenoIDs$Illumina_Gene))
 phenoIDs<-phenoIDs[-duplicata,]
 ```
 
-
-
-###                                                                     TNA
-```{r}
+# USING TNA TO INFER THE MASTER REGULATORS
+```{r echo=TRUE, eval=FALSE}
 # Input 1: 'object', a TNI object with regulons
 # Input 2: 'phenotype', a named numeric vector, usually log2 differential expression levels
 # Input 3: 'hits', a character vector, usually a set of differentially expressed genes
@@ -315,14 +268,13 @@ rtna <- tni2tna.preprocess(object = rtni,
                            hits = hits, 
                            )
 ```
-The `tna.mra` function takes the `TNA-class` object and runs the Master Regulator Analysis (MRA) [@Carro2010] over a list of regulons (with corrections for multiple hypothesis testing). The MRA assesses the overlap between each regulon and the genes listed in the `hits` argument.
-
-```{r label='Run the MRA method', eval=TRUE, results='hide'}
+The `tna.mra` function takes the `TNA-class` object and runs the Master Regulator Analysis (MRA) over a list of regulons (with corrections for multiple hypothesis testing). The MRA assesses the overlap between each regulon and the genes listed in the `hits` argument.
+```{r label='Run the MRA method', eval=FALSE, results='hide'}
 # Run the MRA method
 rtna <- tna.mra(rtna)
 ``` 
 
-```{r label='Get MRA results', eval=TRUE, collapse=TRUE}
+```{r label='Get MRA results', eval=FALSE, collapse=TRUE}
 # Get MRA results;
 #..setting 'ntop = -1' will return all results, regardless of a threshold
 mra <- tna.get(rtna, what="mra", ntop = -1)
@@ -330,12 +282,12 @@ head(mra)
 print(mra)
 ``` 
 
-```{r label='Run GSEA method', eval=TRUE, results='hide'}
+```{r label='Run GSEA method', eval=FALSE, results='hide'}
 # Run the GSEA method
 # Please set nPermutations >= 1000
 rtna <- tna.gsea1(rtna, stepFilter=FALSE, nPermutations=1000)
 ``` 
-```{r label='Get GSEA results', eval=TRUE, collapse=TRUE}
+```{r label='Get GSEA results', eval=FALSE, collapse=TRUE}
 # Get GSEA results
 gsea1 <- tna.get(rtna, what="gsea1", ntop = -1)
 head(gsea1)
@@ -346,12 +298,12 @@ gsea1
 # Plot GSEA results
 tna.plot.gsea1(rtna, labPheno="abs(log2 fold changes)", ntop = -1)
 ``` 
-```{r label='Run the GSEA-2T method', eval=TRUE, results='hide'}
+```{r label='Run the GSEA-2T method', eval=FALSE, results='hide'}
 # Run the GSEA-2T method
 # Please set nPermutations >= 1000
 rtna <- tna.gsea2(rtna, stepFilter = FALSE, nPermutations = 1000)
 ``` 
-```{r label='Get GSEA-2T results', eval=TRUE, collapse=TRUE}
+```{r label='Get GSEA-2T results', eval=FALSE, collapse=TRUE}
 # Get GSEA-2T results
 gsea2 <- tna.get(rtna, what = "gsea2", ntop = -1)
 head(gsea2$differential)
@@ -362,8 +314,3 @@ gsea2$differential
 # Plot GSEA-2T results
 tna.plot.gsea2(rtna, labPheno="log2 fold changes")
 ``` 
-
-
-
-
-

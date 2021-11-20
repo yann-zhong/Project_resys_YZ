@@ -1,0 +1,8 @@
+"0",""
+"0","#write.table(rtni, file = ""rtni.txt"", sep = ""\t"")"
+"0","#write.csv(rtni, file = ""rtni.csv"")"
+"0",""
+"0","library(readr)"
+"0","#write_tsv(rtni, file = ""rtni.txt"")"
+"0","#write_csv(rtni, file = ""rtni.csv"")"
+"0",""
