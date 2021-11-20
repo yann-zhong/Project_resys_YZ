@@ -224,6 +224,13 @@ tT <- topTable(fit2, adjust="fdr", sort.by="B", number=nrow(fit2))
 ```
 
 ```{r}
+indice_of_genes_in_tT<-c(1:length(tT$ID))
+log_FC=c(tT$logFC)
+plot(indice_of_genes_in_tT,log_FC)
+```
+
+
+```{r}
 #Save the resulting table to file for reuse
 filename <- "GSE21257.data.tsv"
 outfile <- paste(basedir, resfolder, filename, sep="/")
@@ -290,6 +297,7 @@ rtna <- tna.mra(rtna)
 #..setting 'ntop = -1' will return all results, regardless of a threshold
 mra <- tna.get(rtna, what="mra", ntop = -1)
 head(mra)
+print(mra)
 ``` 
 
 ```{r label='Run GSEA method', eval=TRUE, results='hide'}
@@ -301,12 +309,30 @@ rtna <- tna.gsea1(rtna, stepFilter=FALSE, nPermutations=1000)
 # Get GSEA results
 gsea1 <- tna.get(rtna, what="gsea1", ntop = -1)
 head(gsea1)
+gsea1
 ``` 
 
 ```{r label='Plot GSEA results', eval=FALSE}
 # Plot GSEA results
 tna.plot.gsea1(rtna, labPheno="abs(log2 fold changes)", ntop = -1)
 ``` 
+```{r label='Run the GSEA-2T method', eval=TRUE, results='hide'}
+# Run the GSEA-2T method
+# Please set nPermutations >= 1000
+rtna <- tna.gsea2(rtna, stepFilter = FALSE, nPermutations = 1000)
+``` 
+```{r label='Get GSEA-2T results', eval=TRUE, collapse=TRUE}
+# Get GSEA-2T results
+gsea2 <- tna.get(rtna, what = "gsea2", ntop = -1)
+head(gsea2$differential)
+gsea2$differential
+``` 
+
+```{r label='Plot GSEA-2T results', eval=FALSE}
+# Plot GSEA-2T results
+tna.plot.gsea2(rtna, labPheno="log2 fold changes")
+``` 
+
 
 
 
